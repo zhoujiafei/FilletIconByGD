@@ -20,7 +20,8 @@
 	imagepng($img);
 	**/
 	
-	function get_lt_rounder_corner($radius) {
+	function get_lt_rounder_corner($radius) 
+	{
 		$img	 = imagecreatetruecolor($radius, $radius);	// 创建一个正方形的图像
 		$bgcolor	= imagecolorallocate($img, 223, 0, 0);	 // 图像的背景
 		$fgcolor	= imagecolorallocate($img, 255, 0, 255);
@@ -81,7 +82,6 @@
 	
 	//叠加
 	imagecopymerge($resource, $_img_s2, 0, $radius, 0, 0, $_img_w2, $_img_h2, 100);
-
 	header('Content-Type: image/png');
 	imagepng($resource);
 	exit;
