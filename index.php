@@ -6,6 +6,7 @@ $icon = new FilletIcon(array(
 	'radius' => 25,
 	'iconWidth' => 140,
 	'iconHeight' => 140,
+	'bgImage' => 'images/1.jpg',
 ));
 
 $icon->create();

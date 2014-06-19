@@ -127,19 +127,16 @@ class FilletIcon
 		if($this->bgImage && file_exists($this->bgImage))
 		{
 			//以图片作为画布
+			$resource = imagecreatefromjpeg($this->bgImage);
+			$new_res  = imagecreate($this->iconWidth, $this->iconHeight);
+			list($oWidth, $oheight) = getimagesize($this->bgImage);//获取原图片的宽度与高度
+			imagecopyresampled($new_res, $resource, 0, 0, 0, 0, $this->iconWidth, $this->iconHeight, $oWidth, $oWidth);
+			$resource = $new_res;
 			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
+			header('Content-Type: image/png');
+			imagepng($resource);
+			exit;
+
 		}
 		else 
 		{
