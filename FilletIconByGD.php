@@ -162,12 +162,12 @@ class FilletIcon
 			/****************************************增加水印文字*************************************/
 			$textColor = imagecolorallocate($resource,0,0,0);
 			$textSize = 60;//字体大小
-			$fontarea = imagettfbbox($textSize,0,"/Users/zhoujiafei/web/FilletIconByGD/pavilion.ttf",$this->text);
+			$fontarea = imagettfbbox($textSize,0,"/Users/zhoujiafei/web/FilletIconByGD/font/pavilion.ttf",$this->text);
 			$textWidth = $fontarea[2] - $fontarea[0];
 			$textHeight = $fontarea[1] - $fontarea[7];
 			$textX = $this->iconWidth/2 - $textWidth/2;
 			$textY = $this->iconHeight/2 + $textSize/2;
-			imagettftext($resource, $textSize, 0, $textX, $textY, $textColor, "/Users/zhoujiafei/web/FilletIconByGD/pavilion.ttf",mb_convert_encoding($this->text, "UTF-8", "GB2312"));
+			imagettftext($resource, $textSize, 0, $textX, $textY, $textColor, "/Users/zhoujiafei/web/FilletIconByGD/font/pavilion.ttf",mb_convert_encoding($this->text, "UTF-8", "GB2312"));
 			/****************************************增加水印文字*************************************/
 
 			/**********************************************输出**************************************/
