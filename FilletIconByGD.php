@@ -13,6 +13,7 @@ class FilletIcon
 	private $iconWidth;//定义生成的图标的宽度
 	private $iconHeight;//定义生成的图标的高度
 	private $radius;//定义圆角的角度值
+	private $font;//定义字体
 	public function __construct($attr = array())
 	{
 		//初始化
@@ -28,6 +29,15 @@ class FilletIcon
 					{
 						$this->$name = $this->colorHxToRGB($attr[$name]);
 					}
+					else if($name == 'font')
+					{
+						$fontPath = dirname(__FILE__) . '/font/' . $attr[$name];
+						if(!file_exists($fontPath))
+						{
+							continue;
+						}
+						$this->$name = $fontPath;
+					}
 					else 
 					{
 						$this->$name = $attr[$name];
@@ -36,7 +46,7 @@ class FilletIcon
 			}
 		}
 	}
-	
+
 	//初始化,设置一些默认值
 	private function init()
 	{
@@ -44,12 +54,13 @@ class FilletIcon
 		$this->fgColor = $this->colorHxToRGB('#FFFFFF');
 		$this->iconWidth = $this->iconHeight = 200;
 		$this->radius = 30;
+		$this->font = dirname(__FILE__) . '/font/pavilion.ttf';//默认兰亭黑简
 	}
 	
 	//属性列表
 	private function getAttrNames()
 	{
-		return array('bgColor','fgColor','bgImage','fgImage','text','bgEffects','iconWidth','iconHeight','radius');
+		return array('bgColor','fgColor','bgImage','fgImage','text','bgEffects','iconWidth','iconHeight','radius','font');
 	}
 	
 	/**
@@ -115,6 +126,19 @@ class FilletIcon
 		//创建画布(图片优先)
 		if($this->bgImage && file_exists($this->bgImage))
 		{
+			//以图片作为画布
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 			
 		}
 		else 
@@ -162,12 +186,12 @@ class FilletIcon
 			/****************************************增加水印文字*************************************/
 			$textColor = imagecolorallocate($resource,0,0,0);
 			$textSize = 60;//字体大小
-			$fontarea = imagettfbbox($textSize,0,"/Users/zhoujiafei/web/FilletIconByGD/FilletIconByGD/font/pavilion.ttf",$this->text);
+			$fontarea = imagettfbbox($textSize,0,$this->font,$this->text);
 			$textWidth = $fontarea[2] - $fontarea[0];
 			$textHeight = $fontarea[1] - $fontarea[7];
 			$textX = $this->iconWidth/2 - $textWidth/2;
 			$textY = $this->iconHeight/2 + $textSize/2;
-			imagettftext($resource, $textSize, 0, $textX, $textY, $textColor, "/Users/zhoujiafei/web/FilletIconByGD/FilletIconByGD/font/pavilion.ttf",$this->text);
+			imagettftext($resource, $textSize, 0, $textX, $textY, $textColor, $this->font,$this->text);
 			/****************************************增加水印文字*************************************/
 
 			/**********************************************输出**************************************/
