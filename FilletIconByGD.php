@@ -184,7 +184,7 @@ class FilletIcon
 			/****************************************创建一个长方形,横向的******************************/
 			
 			/****************************************增加水印文字*************************************/
-			$textColor = imagecolorallocate($resource,0,0,0);
+			$textColor = imagecolorallocate($resource,255,255,255);
 			$textSize = 60;//字体大小
 			$fontarea = imagettfbbox($textSize,0,$this->font,$this->text);
 			$textWidth = $fontarea[2] - $fontarea[0];
