@@ -14,6 +14,11 @@ class FilletIcon
 	private $iconHeight;//定义生成的图标的高度
 	private $radius;//定义圆角的角度值
 	private $font;//定义字体
+	private $rate;//定义前景图在背景图的比率（以宽度与高度中最长的一边来计算比率）
+	private $outputPicType;//定义输出图片的类型(例如：png,jpeg)
+	private $outputMode;//定义输出模式（0:直接输出，1:输出文件到指定目录）
+	private $outputPath;//定义输出到图片路径
+	
 	public function __construct($attr = array())
 	{
 		//初始化
@@ -23,7 +28,7 @@ class FilletIcon
 		{
 			foreach ($this->getAttrNames() AS $name)
 			{
-				if(isset($attr[$name]) && $attr[$name])
+				if(isset($attr[$name]))
 				{
 					if(in_array($name, array('bgColor','fgColor')))
 					{
@@ -37,6 +42,14 @@ class FilletIcon
 							continue;
 						}
 						$this->$name = $fontPath;
+					}
+					else if($name == 'rate')
+					{
+						if($attr[$name] <= 0 || $attr[$name] > 1)
+						{
+							continue;
+						}
+						$this->$name = $attr[$name];
 					}
 					else 
 					{
@@ -55,12 +68,31 @@ class FilletIcon
 		$this->iconWidth = $this->iconHeight = 200;
 		$this->radius = 30;
 		$this->font = dirname(__FILE__) . '/font/pavilion.ttf';//默认兰亭黑简
+		$this->rate = 0.8;//默认比率
+		$this->outputPicType = 'png';//默认输出png
+		$this->outputMode = 0;//默认直接输出
+		$this->outputPath = '';
 	}
 	
 	//属性列表
 	private function getAttrNames()
 	{
-		return array('bgColor','fgColor','bgImage','fgImage','text','bgEffects','iconWidth','iconHeight','radius','font');
+		return array(
+			'bgColor',
+			'fgColor',
+			'bgImage',
+			'fgImage',
+			'text',
+			'bgEffects',
+			'iconWidth',
+			'iconHeight',
+			'radius',
+			'font',
+			'rate',
+			'outputPicType',
+			'outputMode',
+			'outputPath'
+		);
 	}
 	
 	/**
@@ -143,6 +175,59 @@ class FilletIcon
 		return $img;
 	}
 	
+	//根据所给图片的类型来选择使用哪一种图片类型来创建画布
+	private function selectPicType($filePath)
+	{
+		//获取图片的后缀
+		$type = strtolower(strrchr($filePath, '.'));
+		switch ($type)
+		{
+			case '.jpg':
+			case '.jpeg':
+						$resource = imagecreatefromjpeg($filePath);break;
+			case '.png':
+						$resource = imagecreatefrompng($filePath);break;
+			case '.gif':
+						$resource = imagecreatefromgif($filePath);break;
+			default:$resource = imagecreatefromjpeg($filePath);break;
+		}
+		return $resource;
+	}
+	
+	//输出
+	private function output($resource)
+	{
+		switch ($this->outputPicType)
+		{
+			case 'jpg':
+			case 'jpeg':
+						$contentType = 'image/jpeg';
+						$outFunc = 'imagejpeg';
+						break;
+			case 'png':
+						$contentType = 'image/png';
+						$outFunc = 'imagepng';
+						break;
+			case 'gif':
+						$contentType = 'image/gif';
+						$outFunc = 'imagegif';
+						break;
+			default:$contentType = 'image/png';
+					$outFunc = 'imagepng';
+					break;
+		}
+		
+		header('Content-Type: ' . $contentType);
+		if($this->outputMode)
+		{
+			$outFunc($resource,$this->outputPath);
+		}
+		else 
+		{
+			$outFunc($resource);
+		}
+		exit;
+	}
 	
 	//生成图标
 	public function create()
@@ -151,7 +236,7 @@ class FilletIcon
 		if($this->bgImage && file_exists($this->bgImage))
 		{
 			//以图片作为画布
-			$resource = imagecreatefromjpeg($this->bgImage);
+			$resource = $this->selectPicType($this->bgImage);
 			$new_res  = imagecreate($this->iconWidth, $this->iconHeight);
 			list($oWidth, $oheight) = getimagesize($this->bgImage);//获取原图片的宽度与高度
 			imagecopyresampled($new_res, $resource, 0, 0, 0, 0, $this->iconWidth, $this->iconHeight, $oWidth, $oWidth);
@@ -191,21 +276,53 @@ class FilletIcon
 			/****************************************创建一个长方形,横向的******************************/
 		}
 		
-		/****************************************增加水印文字*************************************/
-		$textColor = imagecolorallocate($resource,255,255,255);
-		$textSize = 60;//字体大小
-		$fontarea = imagettfbbox($textSize,0,$this->font,$this->text);
-		$textWidth = $fontarea[2] - $fontarea[0];
-		$textHeight = $fontarea[1] - $fontarea[7];
-		$textX = $this->iconWidth/2 - $textWidth/2;
-		$textY = $this->iconHeight/2 + $textSize/2;
-		imagettftext($resource, $textSize, 0, $textX, $textY, $textColor, $this->font,$this->text);
-		/****************************************增加水印文字*************************************/
-
+		//设置前景图(图片优先)
+		if($this->fgImage && file_exists($this->fgImage))
+		{
+			//获取图片的大小尺寸
+			$fgImageSize = getimagesize($this->fgImage);
+			$fgImageWidth = $fgImageSize[0];
+			$fgImageHeight = $fgImageSize[1];
+			
+			$minBgBorder = ($this->iconWidth < $this->iconHeight)?$this->iconWidth:$this->iconHeight;
+			//前景图标最后覆盖到背景图上必须是按比率的，原则上是不能大于背景图
+			if($fgImageWidth > $fgImageHeight)
+			{
+				$fgDstWidth = $minBgBorder * $this->rate;
+				$fgDstHeight = ($fgDstWidth * $fgImageHeight) / $fgImageWidth;
+			}
+			else 
+			{
+				$fgDstHeight = $minBgBorder * $this->rate;
+				$fgDstWidth = ($fgDstHeight * $fgImageWidth) / $fgImageHeight;
+			}
+			
+			$oriFgRes = $this->selectPicType($this->fgImage);
+			$dstImageRes = imagecreate($fgDstWidth, $fgDstHeight);
+			imagecopyresampled($dstImageRes, $oriFgRes, 0, 0, 0, 0, $fgDstWidth, $fgDstHeight, $fgImageWidth, $fgImageHeight);
+			
+			//合成到背景图上
+			$dstX = $this->iconWidth/2 - $fgDstWidth/2;
+			$dstY = $this->iconHeight/2 - $fgDstHeight/2;
+			imagecopymerge($resource, $dstImageRes, $dstX, $dstY, 0, 0, $fgDstWidth, $fgDstHeight, 100);
+			
+		}
+		else if($this->text)
+		{
+			/****************************************增加水印文字*************************************/
+			$textColor = imagecolorallocate($resource,255,255,255);
+			$textSize = 60;//字体大小
+			$fontarea = imagettfbbox($textSize,0,$this->font,$this->text);
+			$textWidth = $fontarea[2] - $fontarea[0];
+			$textHeight = $fontarea[1] - $fontarea[7];
+			$textX = $this->iconWidth/2 - $textWidth/2;
+			$textY = $this->iconHeight/2 + $textSize/2;
+			imagettftext($resource, $textSize, 0, $textX, $textY, $textColor, $this->font,$this->text);
+			/****************************************增加水印文字*************************************/
+		}
+		
 		/**********************************************输出**************************************/
-		header('Content-Type: image/png');
-		imagepng($resource);
-		exit;
+		$this->output($resource);
 		/**********************************************输出**************************************/
 	}
 }
