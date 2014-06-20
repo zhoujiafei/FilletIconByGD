@@ -237,7 +237,7 @@ class FilletIcon
 		{
 			//以图片作为画布
 			$resource = $this->selectPicType($this->bgImage);
-			$new_res  = imagecreate($this->iconWidth, $this->iconHeight);
+			$new_res  = imagecreatetruecolor($this->iconWidth, $this->iconHeight);
 			list($oWidth, $oheight) = getimagesize($this->bgImage);//获取原图片的宽度与高度
 			imagecopyresampled($new_res, $resource, 0, 0, 0, 0, $this->iconWidth, $this->iconHeight, $oWidth, $oWidth);
 			$resource = $new_res;
@@ -298,7 +298,7 @@ class FilletIcon
 			}
 			
 			$oriFgRes = $this->selectPicType($this->fgImage);
-			$dstImageRes = imagecreate($fgDstWidth, $fgDstHeight);
+			$dstImageRes = imagecreatetruecolor($fgDstWidth, $fgDstHeight);
 			imagecopyresampled($dstImageRes, $oriFgRes, 0, 0, 0, 0, $fgDstWidth, $fgDstHeight, $fgImageWidth, $fgImageHeight);
 			
 			//合成到背景图上
