@@ -8,7 +8,7 @@ $icon = new FilletIcon(array(
 	'iconHeight' => 140,
 	'bgImage' => 'images/4.jpg',
 	'fgImage' => 'images/3.jpg',
-	'rate' => 0.5,
+	'rate' => 0.7,
 ));
 
 $icon->create();

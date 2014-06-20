@@ -229,6 +229,132 @@ class FilletIcon
 		exit;
 	}
 	
+	//颜色渐变特效
+	public function colorGradual($im,$direction,$start,$end)
+	{
+		switch($direction) 
+		{
+			case 'horizontal':
+				$line_numbers = imagesx($im);
+				$line_width = imagesy($im);
+				list($r1,$g1,$b1) = array_values($this->colorHxToRGB($start));
+				list($r2,$g2,$b2) = array_values($this->colorHxToRGB($end));
+				break;
+			case 'vertical':
+				$line_numbers = imagesy($im);
+				$line_width = imagesx($im);
+				list($r1,$g1,$b1) = array_values($this->colorHxToRGB($start));
+				list($r2,$g2,$b2) = array_values($this->colorHxToRGB($end));
+				break;
+			case 'ellipse':
+				$width = imagesx($im);
+				$height = imagesy($im);
+				$rh=$height>$width?1:$width/$height;
+				$rw=$width>$height?1:$height/$width;
+				$line_numbers = min($width,$height);
+				$center_x = $width/2;
+				$center_y = $height/2;
+				list($r1,$g1,$b1) = array_values($this->colorHxToRGB($end));
+				list($r2,$g2,$b2) = array_values($this->colorHxToRGB($start));
+				imagefill($im, 0, 0, imagecolorallocate( $im, $r1, $g1, $b1 ));
+				break;
+			case 'ellipse2':
+				$width = imagesx($im);
+				$height = imagesy($im);
+				$rh=$height>$width?1:$width/$height;
+				$rw=$width>$height?1:$height/$width;
+				$line_numbers = sqrt(pow($width,2)+pow($height,2));
+				$center_x = $width/2;
+				$center_y = $height/2;
+				list($r1,$g1,$b1) = array_values($this->colorHxToRGB($end));
+				list($r2,$g2,$b2) = array_values($this->colorHxToRGB($start));
+				break;
+			case 'circle':
+				$width = imagesx($im);
+				$height = imagesy($im);
+				$line_numbers = sqrt(pow($width,2)+pow($height,2));
+				$center_x = $width/2;
+				$center_y = $height/2;
+				$rh = $rw = 1;
+				list($r1,$g1,$b1) = array_values($this->colorHxToRGB($end));
+				list($r2,$g2,$b2) = array_values($this->colorHxToRGB($start));
+				break;
+			case 'circle2':
+				$width = imagesx($im);
+				$height = imagesy($im);
+				$line_numbers = min($width,$height);
+				$center_x = $width/2;
+				$center_y = $height/2;
+				$rh = $rw = 1;
+				list($r1,$g1,$b1) = array_values($this->colorHxToRGB($end));
+				list($r2,$g2,$b2) = array_values($this->colorHxToRGB($start));
+				imagefill($im, 0, 0, imagecolorallocate( $im, $r1, $g1, $b1 ));
+				break;
+			case 'square':
+			case 'rectangle':
+				$width = imagesx($im);
+				$height = imagesy($im);
+				$line_numbers = max($width,$height)/2;
+				list($r1,$g1,$b1) = array_values($this->colorHxToRGB($end));
+				list($r2,$g2,$b2) = array_values($this->colorHxToRGB($start));
+				break;
+			case 'diamond':
+				list($r1,$g1,$b1) = array_values($this->colorHxToRGB($end));
+				list($r2,$g2,$b2) = array_values($this->colorHxToRGB($start));
+				$width = imagesx($im);
+				$height = imagesy($im);
+				$rh=$height>$width?1:$width/$height;
+				$rw=$width>$height?1:$height/$width;
+				$line_numbers = min($width,$height);
+				break;
+			default:
+		}
+		
+		for ( $i = 0; $i < $line_numbers; $i=$i+1+$this->step ) {
+			// old values :
+			$old_r=$r;
+			$old_g=$g;
+			$old_b=$b;
+			// new values :
+			$r = ( $r2 - $r1 != 0 ) ? intval( $r1 + ( $r2 - $r1 ) * ( $i / $line_numbers ) ): $r1;
+			$g = ( $g2 - $g1 != 0 ) ? intval( $g1 + ( $g2 - $g1 ) * ( $i / $line_numbers ) ): $g1;
+			$b = ( $b2 - $b1 != 0 ) ? intval( $b1 + ( $b2 - $b1 ) * ( $i / $line_numbers ) ): $b1;
+			// if new values are really new ones, allocate a new color, otherwise reuse previous color.
+			// There's a "feature" in imagecolorallocate that makes this function
+			// always returns '-1' after 255 colors have been allocated in an image that was created with
+			// imagecreate (everything works fine with imagecreatetruecolor)
+			if ( "$old_r,$old_g,$old_b" != "$r,$g,$b")
+				$fill = imagecolorallocate( $im, $r, $g, $b );
+			switch($direction) 
+			{
+				case 'vertical':
+					imagefilledrectangle($im, 0, $i, $line_width, $i+$this->step, $fill);
+					break;
+				case 'horizontal':
+					imagefilledrectangle( $im, $i, 0, $i+$this->step, $line_width, $fill );
+					break;
+				case 'ellipse':
+				case 'ellipse2':
+				case 'circle':
+				case 'circle2':
+					imagefilledellipse ($im,$center_x, $center_y, ($line_numbers-$i)*$rh, ($line_numbers-$i)*$rw,$fill);
+					break;
+				case 'square':
+				case 'rectangle':
+					imagefilledrectangle ($im,$i*$width/$height,$i*$height/$width,$width-($i*$width/$height), $height-($i*$height/$width),$fill);
+					break;
+				case 'diamond':
+					imagefilledpolygon($im, array (
+						$width/2, $i*$rw-0.5*$height,
+						$i*$rh-0.5*$width, $height/2,
+						$width/2,1.5*$height-$i*$rw,
+						1.5*$width-$i*$rh, $height/2 ), 4, $fill);
+					break;
+				default:	
+			}
+		}
+	}
+	
 	//生成图标
 	public function create()
 	{
