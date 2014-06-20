@@ -1,6 +1,8 @@
 <?php
 require_once('FilletIconByGD.php');
 
+//http://www.zc520.cc/php/103.html
+
 $icon = new FilletIcon(array(
 	'text' => '龙',
 	'radius' => 30,
