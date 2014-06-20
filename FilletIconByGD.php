@@ -253,6 +253,7 @@ class FilletIcon
 		if($this->outputMode)
 		{
 			$outFunc($resource,$this->outputPath);
+			imagedestroy($resource);
 		}
 		else 
 		{
