@@ -96,16 +96,40 @@ class FilletIcon
 	 * 生成圆角
 	 * 这些圆角实际上通过在一个小正方形上画弧线得来的
 	 */
-	private function createRounderCorner()
+	private function createRounderCorner($isTransfg = 0)
 	{
 		$img 		= imagecreatetruecolor($this->radius, $this->radius);// 创建一个正方形的图像
-		$bgcolor 	= imagecolorallocate($img, 0, 0, 0);// 图像的背景
+		$bgcolor 	= imagecolorallocate($img, 255, 255, 255);// 图像的背景白色
 		$fgcolor 	= imagecolorallocate($img, $this->bgColor['r'], $this->bgColor['g'], $this->bgColor['b']);
 		imagefill($img, 0, 0, $bgcolor);
 		imagefilledarc($img, $this->radius, $this->radius, $this->radius * 2, $this->radius * 2, 180, 270, $fgcolor, IMG_ARC_PIE);
 		//将弧角图片的颜色设置为透明
-		imagecolortransparent($img, $bgcolor);
+		if($isTransfg)
+		{
+			imagecolortransparent($img, $fgcolor);
+		}
+		else 
+		{
+			imagecolortransparent($img, $bgcolor);
+		}
 		return $img;
+	}
+	
+	//创建4个圆角
+	private function create4RounderCorners($resource,$ltCorner)
+	{
+		//左上角
+		imagecopymerge($resource, $ltCorner, 0, 0, 0, 0, $this->radius, $this->radius, 100);
+		//左下角
+		$lbCorner	= imagerotate($ltCorner, 90, 0);
+		imagecopymerge($resource, $lbCorner, 0, $this->iconHeight - $this->radius, 0, 0, $this->radius, $this->radius, 100);
+		//右上角
+		$rbCorner	= imagerotate($ltCorner, 180, 0);
+		imagecopymerge($resource, $rbCorner, $this->iconWidth - $this->radius, $this->iconHeight - $this->radius, 0, 0, $this->radius, $this->radius, 100);
+		//右下角
+		$rtCorner	= imagerotate($ltCorner, 270, 0);
+		imagecopymerge($resource, $rtCorner, $this->iconWidth - $this->radius, 0, 0, 0, $this->radius, $this->radius, 100);
+		return $resource;
 	}
 	
 	/**
@@ -133,10 +157,10 @@ class FilletIcon
 			imagecopyresampled($new_res, $resource, 0, 0, 0, 0, $this->iconWidth, $this->iconHeight, $oWidth, $oWidth);
 			$resource = $new_res;
 			
-			header('Content-Type: image/png');
-			imagepng($resource);
-			exit;
-
+			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
+			$ltCorner = $this->createRounderCorner(1);
+			$resource = $this->create4RounderCorners($resource,$ltCorner);
+			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
 		}
 		else 
 		{
@@ -148,22 +172,8 @@ class FilletIcon
 			/*************************************创建一块真彩画布*************************************/
 			
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
-			//左上角
 			$ltCorner = $this->createRounderCorner();
-			imagecopymerge($resource, $ltCorner, 0, 0, 0, 0, $this->radius, $this->radius, 100);
-			
-			//左下角
-			$lbCorner	= imagerotate($ltCorner, 90, 0);
-			imagecopymerge($resource, $lbCorner, 0, $this->iconHeight - $this->radius, 0, 0, $this->radius, $this->radius, 100);
-			
-			//右上角
-			$rbCorner	= imagerotate($ltCorner, 180, 0);
-			imagecopymerge($resource, $rbCorner, $this->iconWidth - $this->radius, $this->iconHeight - $this->radius, 0, 0, $this->radius, $this->radius, 100);
-			
-			//右下角
-			$rtCorner	= imagerotate($ltCorner, 270, 0);
-			imagecopymerge($resource, $rtCorner, $this->iconWidth - $this->radius, 0, 0, 0, $this->radius, $this->radius, 100);
-			
+			$resource = $this->create4RounderCorners($resource,$ltCorner);
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
 			
 			/****************************************创建一个长方形,竖直的******************************/
@@ -179,23 +189,23 @@ class FilletIcon
 			$rect2 = $this->createRectangle($rectWidth2,$rectHeight2);
 			imagecopymerge($resource, $rect2, 0, $this->radius, 0, 0, $rectWidth2, $rectHeight2, 100);
 			/****************************************创建一个长方形,横向的******************************/
-			
-			/****************************************增加水印文字*************************************/
-			$textColor = imagecolorallocate($resource,255,255,255);
-			$textSize = 60;//字体大小
-			$fontarea = imagettfbbox($textSize,0,$this->font,$this->text);
-			$textWidth = $fontarea[2] - $fontarea[0];
-			$textHeight = $fontarea[1] - $fontarea[7];
-			$textX = $this->iconWidth/2 - $textWidth/2;
-			$textY = $this->iconHeight/2 + $textSize/2;
-			imagettftext($resource, $textSize, 0, $textX, $textY, $textColor, $this->font,$this->text);
-			/****************************************增加水印文字*************************************/
-
-			/**********************************************输出**************************************/
-			header('Content-Type: image/png');
-			imagepng($resource);
-			exit;
-			/**********************************************输出**************************************/
 		}
+		
+		/****************************************增加水印文字*************************************/
+		$textColor = imagecolorallocate($resource,255,255,255);
+		$textSize = 60;//字体大小
+		$fontarea = imagettfbbox($textSize,0,$this->font,$this->text);
+		$textWidth = $fontarea[2] - $fontarea[0];
+		$textHeight = $fontarea[1] - $fontarea[7];
+		$textX = $this->iconWidth/2 - $textWidth/2;
+		$textY = $this->iconHeight/2 + $textSize/2;
+		imagettftext($resource, $textSize, 0, $textX, $textY, $textColor, $this->font,$this->text);
+		/****************************************增加水印文字*************************************/
+
+		/**********************************************输出**************************************/
+		header('Content-Type: image/png');
+		imagepng($resource);
+		exit;
+		/**********************************************输出**************************************/
 	}
 }
