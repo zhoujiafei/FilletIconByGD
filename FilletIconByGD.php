@@ -51,7 +51,15 @@ class FilletIcon
 						}
 						$this->$name = $attr[$name];
 					}
-					else 
+					else if($name == 'bgImage' || $name == 'fgImage')
+					{
+						if(!$this->isAvailablePic($attr[$name]))
+						{
+							continue;
+						}
+						$this->$name = $attr[$name];
+					}
+					else
 					{
 						$this->$name = $attr[$name];
 					}
@@ -93,6 +101,30 @@ class FilletIcon
 			'outputMode',
 			'outputPath'
 		);
+	}
+	
+	//判断一个图片是否可用
+	private function isAvailablePic($imagePath)
+	{
+		//首先查看所给的图片链接里面有没有?有的话就去除掉
+		if(strpos($imagePath,'?'))
+		{
+		    $image = explode('?',$imagePath);
+		    $imagePath = $image[0];
+		}
+		
+		$imageArr = explode('.',$imagePath);
+		$imageSuffix = end($imageArr);//取到最后的值;
+		$availableImages = array('jpg','png','gif','jpeg');//允许的图片类型
+		if(in_array($imageSuffix,$availableImages))
+		{
+			//测试该图片是否可用
+			if(@fopen($imagePath,'r'))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -230,7 +262,7 @@ class FilletIcon
 	}
 	
 	//颜色渐变特效
-	public function colorGradual($im,$direction,$start,$end)
+	private function colorGradual($im,$direction,$start,$end)
 	{
 		switch($direction) 
 		{
@@ -356,7 +388,7 @@ class FilletIcon
 	public function create()
 	{
 		//创建画布(图片优先)
-		if($this->bgImage && file_exists($this->bgImage))
+		if($this->bgImage)
 		{
 			//以图片作为画布
 			$resource = $this->selectPicType($this->bgImage);
@@ -400,7 +432,7 @@ class FilletIcon
 		}
 		
 		//设置前景图(图片优先)
-		if($this->fgImage && file_exists($this->fgImage))
+		if($this->fgImage)
 		{
 			//获取图片的大小尺寸
 			$fgImageSize = getimagesize($this->fgImage);
