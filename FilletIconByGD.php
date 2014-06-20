@@ -249,17 +249,16 @@ class FilletIcon
 					break;
 		}
 		
-		header('Content-Type: ' . $contentType);
 		if($this->outputMode)
 		{
 			$outFunc($resource,$this->outputPath);
-			imagedestroy($resource);
 		}
 		else 
 		{
+			header('Content-Type: ' . $contentType);
 			$outFunc($resource);
 		}
-		exit;
+		imagedestroy($resource);
 	}
 	
 	//颜色渐变特效
