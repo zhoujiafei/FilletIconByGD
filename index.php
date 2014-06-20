@@ -3,12 +3,12 @@ require_once('FilletIconByGD.php');
 
 $icon = new FilletIcon(array(
 	'text' => '龙',
-	'radius' => 25,
-	'iconWidth' => 140,
-	'iconHeight' => 140,
+	'radius' => 30,
+	'iconWidth' => 128,
+	'iconHeight' => 128,
 	'bgImage' => 'http://img3.cache.netease.com/photo/0008/2014-06-20/9V5TL7QK5BD20008.jpg',
-	'fgImage' => 'images/2.jpg',
-	'rate' => 0.5,
+	'fgImage' => 'http://10.0.1.40/applant/app_icon/icon/model_icon_add.png',
+	'rate' 	=> 0.618,
 ));
 
 $icon->create();
