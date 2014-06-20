@@ -310,19 +310,16 @@ class FilletIcon
 			default:
 		}
 		
-		for ( $i = 0; $i < $line_numbers; $i=$i+1+$this->step ) {
-			// old values :
+		for ( $i = 0; $i < $line_numbers; $i=$i+1+$this->step ) 
+		{
 			$old_r=$r;
 			$old_g=$g;
 			$old_b=$b;
-			// new values :
+			
 			$r = ( $r2 - $r1 != 0 ) ? intval( $r1 + ( $r2 - $r1 ) * ( $i / $line_numbers ) ): $r1;
 			$g = ( $g2 - $g1 != 0 ) ? intval( $g1 + ( $g2 - $g1 ) * ( $i / $line_numbers ) ): $g1;
 			$b = ( $b2 - $b1 != 0 ) ? intval( $b1 + ( $b2 - $b1 ) * ( $i / $line_numbers ) ): $b1;
-			// if new values are really new ones, allocate a new color, otherwise reuse previous color.
-			// There's a "feature" in imagecolorallocate that makes this function
-			// always returns '-1' after 255 colors have been allocated in an image that was created with
-			// imagecreate (everything works fine with imagecreatetruecolor)
+			
 			if ( "$old_r,$old_g,$old_b" != "$r,$g,$b")
 				$fill = imagecolorallocate( $im, $r, $g, $b );
 			switch($direction) 
