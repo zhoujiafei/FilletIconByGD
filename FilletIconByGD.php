@@ -62,13 +62,9 @@ class FilletIcon
 					}
 					else if($name == 'gradualMode')
 					{
-						if(intval($attr[$name]))
+						if($attr[$name] && !in_array($attr[$name],$this->getGradualModes()))
 						{
-							$gradualModes = $this->getGradualModes();
-							if(!isset($gradualModes[intval($attr[$name])]))
-							{
-								continue;
-							}
+							continue;
 						}
 						$this->$name = $attr[$name];
 					}
@@ -93,7 +89,7 @@ class FilletIcon
 		$this->outputPicType = 'png';//默认输出png
 		$this->outputMode = 0;//默认直接输出
 		$this->outputPath = '';
-		$this->gradualMode = 0;//默认不渐变
+		$this->gradualMode = '';//默认不渐变
 	}
 	
 	//属性列表
@@ -122,13 +118,13 @@ class FilletIcon
 	private function getGradualModes()
 	{
 		return array(
-			1 => 'horizontal',
-			2 => 'vertical',
-			3 => 'ellipse',
-			4 => 'circle',
-			5 => 'circle2',
-			6 => 'square',
-			7 => 'diamond',
+			'horizontal',
+			'vertical',
+			'ellipse',
+			'circle',
+			'circle2',
+			'square',
+			'diamond',
 		);
 	}
 	
@@ -477,9 +473,7 @@ class FilletIcon
 		{
 			//创建一个画布
 			$resource = imagecreatetruecolor($this->iconWidth, $this->iconHeight);
-			//创建一个渐变色作为背景
-			$gradualModeArr = $this->getGradualModes();
-			$this->colorGradual($resource,$gradualModeArr[$this->gradualMode],'#000000',$this->colorRGBToHx($this->bgColor));
+			$this->colorGradual($resource,$this->gradualMode,'#000000',$this->colorRGBToHx($this->bgColor));
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
 			$ltCorner = $this->createRounderCorner(1);
 			$resource = $this->create4RounderCorners($resource,$ltCorner);
