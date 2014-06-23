@@ -440,8 +440,6 @@ class FilletIcon
 			$fgImageHeight = $fgImageSize[1];
 			$oriFgRes = $this->selectPicType($this->fgImage);//获取前景图
 			
-			file_put_contents('1111.txt',$fgImageWidth * $fgImageHeight .'=='.$this->iconWidth * $this->iconHeight);
-			
 			if($fgImageWidth * $fgImageHeight > $this->iconWidth * $this->iconHeight)
 			{
 				$minBgBorder = ($this->iconWidth < $this->iconHeight)?$this->iconWidth:$this->iconHeight;
