@@ -18,6 +18,7 @@ class FilletIcon
 	private $outputPicType;//定义输出图片的类型(例如：png,jpeg)
 	private $outputMode;//定义输出模式（0:直接输出，1:输出文件到指定目录）
 	private $outputPath;//定义输出到图片路径
+	private $gradualMode;//定义当背景是色值的时候可以指定渐变的模式，如果为空则不渐变
 	
 	public function __construct($attr = array())
 	{
@@ -59,7 +60,19 @@ class FilletIcon
 						}
 						$this->$name = $attr[$name];
 					}
-					else
+					else if($name == 'gradualMode')
+					{
+						if(intval($attr[$name]))
+						{
+							$gradualModes = $this->getGradualModes();
+							if(!isset($gradualModes[intval($attr[$name])]))
+							{
+								continue;
+							}
+						}
+						$this->$name = $attr[$name];
+					}
+					else 
 					{
 						$this->$name = $attr[$name];
 					}
@@ -80,6 +93,7 @@ class FilletIcon
 		$this->outputPicType = 'png';//默认输出png
 		$this->outputMode = 0;//默认直接输出
 		$this->outputPath = '';
+		$this->gradualMode = 0;//默认不渐变
 	}
 	
 	//属性列表
@@ -99,7 +113,22 @@ class FilletIcon
 			'rate',
 			'outputPicType',
 			'outputMode',
-			'outputPath'
+			'outputPath',
+			'gradualMode',
+		);
+	}
+	
+	//获取渐变色模式列表
+	private function getGradualModes()
+	{
+		return array(
+			1 => 'horizontal',
+			2 => 'vertical',
+			3 => 'ellipse',
+			4 => 'circle',
+			5 => 'circle2',
+			6 => 'square',
+			7 => 'diamond',
 		);
 	}
 	
@@ -154,6 +183,20 @@ class FilletIcon
 			);
 		}
 		return $rgb;
+	}
+	
+	/**
+	 * 将RGB颜色值转换成16进制
+	 * 例如：array('r' => 255,'g' => 0,'b' => 0) => 0xff0000;
+	 */
+	private function colorRGBToHx($rgb = array())
+	{
+		list($r,$g,$b) = array_values($rgb);
+	    if($r < 0 || $g < 0 || $b < 0 || $r > 255 || $g > 255|| $b > 255)
+	    {
+	        return false;
+	    }
+	    return "#".(substr("00".dechex($r),-2)).(substr("00".dechex($g),-2)).(substr("00".dechex($b),-2));
 	}
 	
 	/**
@@ -402,7 +445,7 @@ class FilletIcon
 			$resource = $this->create4RounderCorners($resource,$ltCorner);
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
 		}
-		else 
+		else if(!$this->gradualMode)//如果不采用渐变色
 		{
 			/*************************************创建一块真彩画布*************************************/
 			$resource	 = imagecreatetruecolor($this->iconWidth, $this->iconHeight);//创建一个正方形的图像
@@ -429,6 +472,18 @@ class FilletIcon
 			$rect2 = $this->createRectangle($rectWidth2,$rectHeight2);
 			imagecopymerge($resource, $rect2, 0, $this->radius, 0, 0, $rectWidth2, $rectHeight2, 100);
 			/****************************************创建一个长方形,横向的******************************/
+		}
+		else//再用渐变色 
+		{
+			//创建一个画布
+			$resource = imagecreatetruecolor($this->iconWidth, $this->iconHeight);
+			//创建一个渐变色作为背景
+			$gradualModeArr = $this->getGradualModes();
+			$this->colorGradual($resource,$gradualModeArr[$this->gradualMode],'#000000',$this->colorRGBToHx($this->bgColor));
+			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
+			$ltCorner = $this->createRounderCorner(1);
+			$resource = $this->create4RounderCorners($resource,$ltCorner);
+			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
 		}
 		
 		//设置前景图(图片优先)

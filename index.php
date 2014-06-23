@@ -11,6 +11,7 @@ $icon = new FilletIcon(array(
 	'bgImage' => 'images/4.jpg',
 	'fgImage' => 'images/5.png',
 	'rate' 	=> 0.618,
+	'gradualMode' => 1,
 ));
 
 $icon->create();
