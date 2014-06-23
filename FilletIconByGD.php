@@ -438,29 +438,40 @@ class FilletIcon
 			$fgImageSize = getimagesize($this->fgImage);
 			$fgImageWidth = $fgImageSize[0];
 			$fgImageHeight = $fgImageSize[1];
+			$oriFgRes = $this->selectPicType($this->fgImage);//获取前景图
 			
-			$minBgBorder = ($this->iconWidth < $this->iconHeight)?$this->iconWidth:$this->iconHeight;
-			//前景图标最后覆盖到背景图上必须是按比率的，原则上是不能大于背景图
-			if($fgImageWidth > $fgImageHeight)
+			file_put_contents('1111.txt',$fgImageWidth * $fgImageHeight .'=='.$this->iconWidth * $this->iconHeight);
+			
+			if($fgImageWidth * $fgImageHeight > $this->iconWidth * $this->iconHeight)
 			{
-				$fgDstWidth = $minBgBorder * $this->rate;
-				$fgDstHeight = ($fgDstWidth * $fgImageHeight) / $fgImageWidth;
+				$minBgBorder = ($this->iconWidth < $this->iconHeight)?$this->iconWidth:$this->iconHeight;
+				//前景图标最后覆盖到背景图上必须是按比率的，原则上是不能大于背景图
+				if($fgImageWidth > $fgImageHeight)
+				{
+					$fgDstWidth = $minBgBorder * $this->rate;
+					$fgDstHeight = ($fgDstWidth * $fgImageHeight) / $fgImageWidth;
+				}
+				else 
+				{
+					$fgDstHeight = $minBgBorder * $this->rate;
+					$fgDstWidth = ($fgDstHeight * $fgImageWidth) / $fgImageHeight;
+				}
+
+				$dstImageRes = imagecreatetruecolor($fgDstWidth, $fgDstHeight);
+				imagecopyresampled($dstImageRes, $oriFgRes, 0, 0, 0, 0, $fgDstWidth, $fgDstHeight, $fgImageWidth, $fgImageHeight);
+				
+				//合成到背景图上
+				$dstX = $this->iconWidth/2 - $fgDstWidth/2;
+				$dstY = $this->iconHeight/2 - $fgDstHeight/2;
+				imagecopymerge($resource, $dstImageRes, $dstX, $dstY, 0, 0, $fgDstWidth, $fgDstHeight, 100);
 			}
 			else 
 			{
-				$fgDstHeight = $minBgBorder * $this->rate;
-				$fgDstWidth = ($fgDstHeight * $fgImageWidth) / $fgImageHeight;
+				//合成到背景图上
+				$dstX = $this->iconWidth/2 - $fgImageWidth/2;
+				$dstY = $this->iconHeight/2 - $fgImageHeight/2;
+				imagecopy($resource, $oriFgRes, $dstX, $dstY, 0, 0, $fgImageWidth, $fgImageHeight);
 			}
-			
-			$oriFgRes = $this->selectPicType($this->fgImage);
-			$dstImageRes = imagecreatetruecolor($fgDstWidth, $fgDstHeight);
-			imagecopyresampled($dstImageRes, $oriFgRes, 0, 0, 0, 0, $fgDstWidth, $fgDstHeight, $fgImageWidth, $fgImageHeight);
-			
-			//合成到背景图上
-			$dstX = $this->iconWidth/2 - $fgDstWidth/2;
-			$dstY = $this->iconHeight/2 - $fgDstHeight/2;
-			imagecopymerge($resource, $dstImageRes, $dstX, $dstY, 0, 0, $fgDstWidth, $fgDstHeight, 100);
-			
 		}
 		else if($this->text)
 		{
