@@ -5,7 +5,7 @@ require_once('FilletIconByGD.php');
 
 $icon = new FilletIcon(array(
 	'text' => '龙',
-	'radius' => 30,
+	'radius' => 20,
 	'iconWidth' => 128,
 	'iconHeight' => 128,
 	//'bgImage' => 'images/4.jpg',
