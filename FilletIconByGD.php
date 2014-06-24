@@ -433,7 +433,10 @@ class FilletIcon
 			$resource = $this->selectPicType($this->bgImage);
 			$new_res  = imagecreatetruecolor($this->iconWidth, $this->iconHeight);
 			list($oWidth, $oheight) = getimagesize($this->bgImage);//获取原图片的宽度与高度
+			$alpha = imagecolorallocatealpha($new_res, 0, 0, 0, 127);
+			imagefill($new_res, 0, 0, $alpha);
 			imagecopyresampled($new_res, $resource, 0, 0, 0, 0, $this->iconWidth, $this->iconHeight, $oWidth, $oWidth);
+			imagesavealpha($new_res, true);
 			$resource = $new_res;
 			
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/

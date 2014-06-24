@@ -9,7 +9,7 @@ $icon = new FilletIcon(array(
 	'iconWidth' => 128,
 	'iconHeight' => 128,
 	'bgImage' => 'images/5.png',
-	//'fgImage' => 'images/5.png',
+	//'fgImage' => 'images/4.jpg',
 	'rate' 	=> 0.618,
 	'gradualMode' => 'vertical',
 ));
