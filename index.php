@@ -5,13 +5,13 @@ require_once('FilletIconByGD.php');
 
 $icon = new FilletIcon(array(
 	'text' => '龙',
-	'radius' => 20,
+	'radius' => 0,
 	'iconWidth' => 128,
 	'iconHeight' => 128,
-	//'bgImage' => 'images/4.jpg',
+	'bgImage' => 'images/4.jpg',
 	'fgImage' => 'images/5.png',
 	'rate' 	=> 0.618,
-	'gradualMode' => 'ellipse',
+	'gradualMode' => 'vertical',
 ));
 
 $icon->create();

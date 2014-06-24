@@ -437,8 +437,11 @@ class FilletIcon
 			$resource = $new_res;
 			
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
-			$ltCorner = $this->createRounderCorner(1);
-			$resource = $this->create4RounderCorners($resource,$ltCorner);
+			if($this->radius > 0)
+			{
+				$ltCorner = $this->createRounderCorner(1);
+				$resource = $this->create4RounderCorners($resource,$ltCorner);
+			}
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
 		}
 		else if(!$this->gradualMode)//如果不采用渐变色
@@ -450,33 +453,40 @@ class FilletIcon
 			imagefill($resource, 0, 0, $bgcolor);//填充颜色
 			/*************************************创建一块真彩画布*************************************/
 			
-			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
-			$ltCorner = $this->createRounderCorner();
-			$resource = $this->create4RounderCorners($resource,$ltCorner);
-			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
-			
-			/****************************************创建一个长方形,竖直的******************************/
-			$rectWidth1 = $this->iconWidth - $this->radius * 2;
-			$rectHeight1 = $this->iconHeight;
-			$rect1 = $this->createRectangle($rectWidth1,$rectHeight1);
-			imagecopymerge($resource, $rect1, $this->radius, 0, 0, 0, $rectWidth1, $rectHeight1, 100);
-			/****************************************创建一个长方形,竖直的******************************/
-			
-			/****************************************创建一个长方形,横向的******************************/
-			$rectWidth2 = $this->iconWidth;
-			$rectHeight2 = $this->iconHeight - $this->radius * 2;
-			$rect2 = $this->createRectangle($rectWidth2,$rectHeight2);
-			imagecopymerge($resource, $rect2, 0, $this->radius, 0, 0, $rectWidth2, $rectHeight2, 100);
-			/****************************************创建一个长方形,横向的******************************/
+			if($this->radius > 0)
+			{
+				/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
+				$ltCorner = $this->createRounderCorner();
+				$resource = $this->create4RounderCorners($resource,$ltCorner);
+				/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
+				
+				/****************************************创建一个长方形,竖直的******************************/
+				$rectWidth1 = $this->iconWidth - $this->radius * 2;
+				$rectHeight1 = $this->iconHeight;
+				$rect1 = $this->createRectangle($rectWidth1,$rectHeight1);
+				imagecopymerge($resource, $rect1, $this->radius, 0, 0, 0, $rectWidth1, $rectHeight1, 100);
+				/****************************************创建一个长方形,竖直的******************************/
+				
+				/****************************************创建一个长方形,横向的******************************/
+				$rectWidth2 = $this->iconWidth;
+				$rectHeight2 = $this->iconHeight - $this->radius * 2;
+				$rect2 = $this->createRectangle($rectWidth2,$rectHeight2);
+				imagecopymerge($resource, $rect2, 0, $this->radius, 0, 0, $rectWidth2, $rectHeight2, 100);
+				/****************************************创建一个长方形,横向的******************************/
+			}
 		}
 		else//再用渐变色 
 		{
 			//创建一个画布
 			$resource = imagecreatetruecolor($this->iconWidth, $this->iconHeight);
 			$this->colorGradual($resource,$this->gradualMode,'#000000',$this->colorRGBToHx($this->bgColor));
+			
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
-			$ltCorner = $this->createRounderCorner(1);
-			$resource = $this->create4RounderCorners($resource,$ltCorner);
+			if($this->radius > 0)
+			{
+				$ltCorner = $this->createRounderCorner(1);
+				$resource = $this->create4RounderCorners($resource,$ltCorner);
+			}
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
 		}
 		
