@@ -451,13 +451,13 @@ class FilletIcon
 		{
 			/*************************************创建一块真彩画布*************************************/
 			$resource	 = imagecreatetruecolor($this->iconWidth, $this->iconHeight);//创建一个正方形的图像
-			$bgcolor	 = imagecolorallocate($resource, 0, 0, 0); //图像的背景
-			imagecolortransparent($resource, $bgcolor);//设置为透明
-			imagefill($resource, 0, 0, $bgcolor);//填充颜色
 			/*************************************创建一块真彩画布*************************************/
-			
 			if($this->radius > 0)
 			{
+				$bgcolor = imagecolorallocate($resource, 0, 0, 0); //图像的背景
+				imagecolortransparent($resource, $bgcolor);//设置为透明
+				imagefill($resource, 0, 0, $bgcolor);//填充颜色
+				
 				/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
 				$ltCorner = $this->createRounderCorner();
 				$resource = $this->create4RounderCorners($resource,$ltCorner);
@@ -476,6 +476,11 @@ class FilletIcon
 				$rect2 = $this->createRectangle($rectWidth2,$rectHeight2);
 				imagecopymerge($resource, $rect2, 0, $this->radius, 0, 0, $rectWidth2, $rectHeight2, 100);
 				/****************************************创建一个长方形,横向的******************************/
+			}
+			else 
+			{
+				$bgcolor = imagecolorallocate($resource, $this->bgColor['r'], $this->bgColor['g'], $this->bgColor['b']); //图像的背景
+				imagefill($resource, 0, 0, $bgcolor);//填充颜色
 			}
 		}
 		else//再用渐变色 
