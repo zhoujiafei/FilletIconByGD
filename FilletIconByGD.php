@@ -18,6 +18,7 @@ class FilletIcon
 	private $outputPicType;//定义输出图片的类型(例如：png,jpeg)
 	private $outputMode;//定义输出模式（0:直接输出，1:输出文件到指定目录）
 	private $outputPath;//定义输出到图片路径
+	private $gradualMode;//定义当背景是色值的时候可以指定渐变的模式，如果为空则不渐变
 	
 	public function __construct($attr = array())
 	{
@@ -59,7 +60,15 @@ class FilletIcon
 						}
 						$this->$name = $attr[$name];
 					}
-					else
+					else if($name == 'gradualMode')
+					{
+						if($attr[$name] && !in_array($attr[$name],$this->getGradualModes()))
+						{
+							continue;
+						}
+						$this->$name = $attr[$name];
+					}
+					else 
 					{
 						$this->$name = $attr[$name];
 					}
@@ -80,6 +89,7 @@ class FilletIcon
 		$this->outputPicType = 'png';//默认输出png
 		$this->outputMode = 0;//默认直接输出
 		$this->outputPath = '';
+		$this->gradualMode = '';//默认不渐变
 	}
 	
 	//属性列表
@@ -99,7 +109,22 @@ class FilletIcon
 			'rate',
 			'outputPicType',
 			'outputMode',
-			'outputPath'
+			'outputPath',
+			'gradualMode',
+		);
+	}
+	
+	//获取渐变色模式列表
+	private function getGradualModes()
+	{
+		return array(
+			'horizontal',
+			'vertical',
+			'ellipse',
+			'circle',
+			'circle2',
+			'square',
+			'diamond',
 		);
 	}
 	
@@ -154,6 +179,20 @@ class FilletIcon
 			);
 		}
 		return $rgb;
+	}
+	
+	/**
+	 * 将RGB颜色值转换成16进制
+	 * 例如：array('r' => 255,'g' => 0,'b' => 0) => 0xff0000;
+	 */
+	private function colorRGBToHx($rgb = array())
+	{
+		list($r,$g,$b) = array_values($rgb);
+	    if($r < 0 || $g < 0 || $b < 0 || $r > 255 || $g > 255|| $b > 255)
+	    {
+	        return false;
+	    }
+	    return "#".(substr("00".dechex($r),-2)).(substr("00".dechex($g),-2)).(substr("00".dechex($b),-2));
 	}
 	
 	/**
@@ -394,41 +433,69 @@ class FilletIcon
 			$resource = $this->selectPicType($this->bgImage);
 			$new_res  = imagecreatetruecolor($this->iconWidth, $this->iconHeight);
 			list($oWidth, $oheight) = getimagesize($this->bgImage);//获取原图片的宽度与高度
+			$alpha = imagecolorallocatealpha($new_res, 0, 0, 0, 127);
+			imagefill($new_res, 0, 0, $alpha);
 			imagecopyresampled($new_res, $resource, 0, 0, 0, 0, $this->iconWidth, $this->iconHeight, $oWidth, $oWidth);
+			imagesavealpha($new_res, true);
 			$resource = $new_res;
 			
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
-			$ltCorner = $this->createRounderCorner(1);
-			$resource = $this->create4RounderCorners($resource,$ltCorner);
+			if($this->radius > 0)
+			{
+				$ltCorner = $this->createRounderCorner(1);
+				$resource = $this->create4RounderCorners($resource,$ltCorner);
+			}
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
 		}
-		else 
+		else if(!$this->gradualMode)//如果不采用渐变色
 		{
 			/*************************************创建一块真彩画布*************************************/
 			$resource	 = imagecreatetruecolor($this->iconWidth, $this->iconHeight);//创建一个正方形的图像
-			$bgcolor	 = imagecolorallocate($resource, 0, 0, 0); //图像的背景
-			imagecolortransparent($resource, $bgcolor);//设置为透明
-			imagefill($resource, 0, 0, $bgcolor);//填充颜色
 			/*************************************创建一块真彩画布*************************************/
+			if($this->radius > 0)
+			{
+				$bgcolor = imagecolorallocate($resource, 0, 0, 0); //图像的背景
+				imagecolortransparent($resource, $bgcolor);//设置为透明
+				imagefill($resource, 0, 0, $bgcolor);//填充颜色
+				
+				/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
+				$ltCorner = $this->createRounderCorner();
+				$resource = $this->create4RounderCorners($resource,$ltCorner);
+				/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
+				
+				/****************************************创建一个长方形,竖直的******************************/
+				$rectWidth1 = $this->iconWidth - $this->radius * 2;
+				$rectHeight1 = $this->iconHeight;
+				$rect1 = $this->createRectangle($rectWidth1,$rectHeight1);
+				imagecopymerge($resource, $rect1, $this->radius, 0, 0, 0, $rectWidth1, $rectHeight1, 100);
+				/****************************************创建一个长方形,竖直的******************************/
+				
+				/****************************************创建一个长方形,横向的******************************/
+				$rectWidth2 = $this->iconWidth;
+				$rectHeight2 = $this->iconHeight - $this->radius * 2;
+				$rect2 = $this->createRectangle($rectWidth2,$rectHeight2);
+				imagecopymerge($resource, $rect2, 0, $this->radius, 0, 0, $rectWidth2, $rectHeight2, 100);
+				/****************************************创建一个长方形,横向的******************************/
+			}
+			else 
+			{
+				$bgcolor = imagecolorallocate($resource, $this->bgColor['r'], $this->bgColor['g'], $this->bgColor['b']); //图像的背景
+				imagefill($resource, 0, 0, $bgcolor);//填充颜色
+			}
+		}
+		else//再用渐变色 
+		{
+			//创建一个画布
+			$resource = imagecreatetruecolor($this->iconWidth, $this->iconHeight);
+			$this->colorGradual($resource,$this->gradualMode,'#000000',$this->colorRGBToHx($this->bgColor));
 			
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
-			$ltCorner = $this->createRounderCorner();
-			$resource = $this->create4RounderCorners($resource,$ltCorner);
+			if($this->radius > 0)
+			{
+				$ltCorner = $this->createRounderCorner(1);
+				$resource = $this->create4RounderCorners($resource,$ltCorner);
+			}
 			/***************************分别在正方形的四个边角画圆角,然后合成到画布上************************/
-			
-			/****************************************创建一个长方形,竖直的******************************/
-			$rectWidth1 = $this->iconWidth - $this->radius * 2;
-			$rectHeight1 = $this->iconHeight;
-			$rect1 = $this->createRectangle($rectWidth1,$rectHeight1);
-			imagecopymerge($resource, $rect1, $this->radius, 0, 0, 0, $rectWidth1, $rectHeight1, 100);
-			/****************************************创建一个长方形,竖直的******************************/
-			
-			/****************************************创建一个长方形,横向的******************************/
-			$rectWidth2 = $this->iconWidth;
-			$rectHeight2 = $this->iconHeight - $this->radius * 2;
-			$rect2 = $this->createRectangle($rectWidth2,$rectHeight2);
-			imagecopymerge($resource, $rect2, 0, $this->radius, 0, 0, $rectWidth2, $rectHeight2, 100);
-			/****************************************创建一个长方形,横向的******************************/
 		}
 		
 		//设置前景图(图片优先)
@@ -438,29 +505,38 @@ class FilletIcon
 			$fgImageSize = getimagesize($this->fgImage);
 			$fgImageWidth = $fgImageSize[0];
 			$fgImageHeight = $fgImageSize[1];
+			$oriFgRes = $this->selectPicType($this->fgImage);//获取前景图
 			
-			$minBgBorder = ($this->iconWidth < $this->iconHeight)?$this->iconWidth:$this->iconHeight;
-			//前景图标最后覆盖到背景图上必须是按比率的，原则上是不能大于背景图
-			if($fgImageWidth > $fgImageHeight)
+			if($fgImageWidth * $fgImageHeight > $this->iconWidth * $this->iconHeight)
 			{
-				$fgDstWidth = $minBgBorder * $this->rate;
-				$fgDstHeight = ($fgDstWidth * $fgImageHeight) / $fgImageWidth;
+				$minBgBorder = ($this->iconWidth < $this->iconHeight)?$this->iconWidth:$this->iconHeight;
+				//前景图标最后覆盖到背景图上必须是按比率的，原则上是不能大于背景图
+				if($fgImageWidth > $fgImageHeight)
+				{
+					$fgDstWidth = $minBgBorder * $this->rate;
+					$fgDstHeight = ($fgDstWidth * $fgImageHeight) / $fgImageWidth;
+				}
+				else 
+				{
+					$fgDstHeight = $minBgBorder * $this->rate;
+					$fgDstWidth = ($fgDstHeight * $fgImageWidth) / $fgImageHeight;
+				}
+
+				$dstImageRes = imagecreatetruecolor($fgDstWidth, $fgDstHeight);
+				imagecopyresampled($dstImageRes, $oriFgRes, 0, 0, 0, 0, $fgDstWidth, $fgDstHeight, $fgImageWidth, $fgImageHeight);
+				
+				//合成到背景图上
+				$dstX = $this->iconWidth/2 - $fgDstWidth/2;
+				$dstY = $this->iconHeight/2 - $fgDstHeight/2;
+				imagecopymerge($resource, $dstImageRes, $dstX, $dstY, 0, 0, $fgDstWidth, $fgDstHeight, 100);
 			}
 			else 
 			{
-				$fgDstHeight = $minBgBorder * $this->rate;
-				$fgDstWidth = ($fgDstHeight * $fgImageWidth) / $fgImageHeight;
+				//合成到背景图上
+				$dstX = $this->iconWidth/2 - $fgImageWidth/2;
+				$dstY = $this->iconHeight/2 - $fgImageHeight/2;
+				imagecopy($resource, $oriFgRes, $dstX, $dstY, 0, 0, $fgImageWidth, $fgImageHeight);
 			}
-			
-			$oriFgRes = $this->selectPicType($this->fgImage);
-			$dstImageRes = imagecreatetruecolor($fgDstWidth, $fgDstHeight);
-			imagecopyresampled($dstImageRes, $oriFgRes, 0, 0, 0, 0, $fgDstWidth, $fgDstHeight, $fgImageWidth, $fgImageHeight);
-			
-			//合成到背景图上
-			$dstX = $this->iconWidth/2 - $fgDstWidth/2;
-			$dstY = $this->iconHeight/2 - $fgDstHeight/2;
-			imagecopymerge($resource, $dstImageRes, $dstX, $dstY, 0, 0, $fgDstWidth, $fgDstHeight, 100);
-			
 		}
 		else if($this->text)
 		{
