@@ -9,6 +9,7 @@ class FilletIcon
 	private $bgImage;//定义背景图
 	private $fgImage;//定义前景图
 	private $text;//定义图标上面的文字
+	private $textSize;//定义文字的大小
 	private $bgEffects;//定义背景图特效实际就是一张图
 	private $iconWidth;//定义生成的图标的宽度
 	private $iconHeight;//定义生成的图标的高度
@@ -90,6 +91,7 @@ class FilletIcon
 		$this->outputMode = 0;//默认直接输出
 		$this->outputPath = '';
 		$this->gradualMode = '';//默认不渐变
+		$this->textSize = 60;//默认文字大小
 	}
 	
 	//属性列表
@@ -111,6 +113,7 @@ class FilletIcon
 			'outputMode',
 			'outputPath',
 			'gradualMode',
+			'textSize',
 		);
 	}
 	
@@ -542,7 +545,7 @@ class FilletIcon
 		{
 			/****************************************增加水印文字*************************************/
 			$textColor = imagecolorallocate($resource,255,255,255);
-			$textSize = 60;//字体大小
+			$textSize = $this->textSize;//字体大小
 			$fontarea = imagettfbbox($textSize,0,$this->font,$this->text);
 			$textWidth = $fontarea[2] - $fontarea[0];
 			$textHeight = $fontarea[1] - $fontarea[7];

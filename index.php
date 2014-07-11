@@ -1,17 +1,16 @@
 <?php
 require_once('FilletIconByGD.php');
 
-//http://www.zc520.cc/php/103.html
-
 $icon = new FilletIcon(array(
 	'text' => '龙',
 	'radius' => 0,
-	'iconWidth' => 128,
-	'iconHeight' => 128,
-	'bgImage' => 'images/5.png',
-	'fgImage' => 'images/model_icon_home.png',
+	'iconWidth' => 1024,
+	'iconHeight' => 1024,
+	'bgImage' => 'images/1.jpg',
+	'fgImage' => 'images/4.jpg',
 	'rate' 	=> 0.618,
 	'gradualMode' => 'vertical',
+	'textSize' => 600,
 ));
 
 $icon->create();
