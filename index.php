@@ -2,15 +2,16 @@
 require_once('FilletIconByGD.php');
 
 $icon = new FilletIcon(array(
-	'text' => '龙',
+	//'text' => '加',
 	'radius' => 0,
 	'iconWidth' => 1024,
 	'iconHeight' => 1024,
-	'bgImage' => 'images/bg.jpg',
-	'fgImage' => 'images/76.png',
+	'bgImage' => 'images/flat.png',
+	//'fgImage' => 'images/76.png',
 	'rate' 	=> 0.618,
 	'gradualMode' => 'vertical',
-	'textSize' => 600,
+	'textSize' => 480,
+	//'font' => 'fangzheng.ttf',
 ));
 
 $icon->create();
